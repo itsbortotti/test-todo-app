@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: todo-backend
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    environment:
+      NODE_ENV: production
+    depends_on:
+      - sqlite
+    command: npm run start:prod
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: todo-frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      REACT_APP_API_URL: http://localhost:4000
+    command: yarn start
+
+  sqlite:
+    image: alpine:latest
+    container_name: todo-sqlite
+    command: sh -c "apk add --no-cache sqlite && sqlite3 :memory:"
+    volumes:
+      - sqlite-data:/data
+    restart: always
+
+volumes:
+  sqlite-data:
